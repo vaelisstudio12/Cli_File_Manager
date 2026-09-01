@@ -1,42 +1,57 @@
-# 📝 NeonNotes
+# Go TUI File Manager
 
-A minimalist, local-first, floating notes application built with Python and PyWebview. It features a transparent "Widget Mode" and remembers its exact position on your screen.
+A modern terminal-based file manager developed using Go and the Charmbracelet ecosystem, featuring dual panes, asynchronous file operations, an advanced undo/redo mechanism, and a built-in text editor.
 
-![Demo GIF](https://github.com/vaelisstudio12/NeonNotes/blob/main/application.gif) 
 
-## ✨ Features
+![Demo GIF](https://github.com/vaelisstudio12/Cli_File_Manager/blob/main/animation.gif) 
+## 🚀 Features
 
-* **Zero Configuration:** Just run `main.py`. The app automatically generates its own HTML, CSS, and JS files on the first run!
-* **Widget Mode:** Click a note to shrink the app into a minimal floating widget on your desktop.
-* **Smart Positioning:** Remembers your exact window coordinates (both in Main and Widget modes).
-* **Customizable Themes:** Change background and text colors directly from the UI.
-* **Local & Secure:** All data is saved locally in a thread-safe `data.json` file. No cloud, no tracking.
+* **Dual-Pane:** Fast switching between left and right panels with independent directory management.
+* **Asynchronous Operations:** Background architecture with a `progress bar` to prevent UI freezing during large file copies and moves.
+* **Undo/Redo:** Safely revert or repeat file operations (`Ctrl+Z` and `Ctrl+Y`).
+* **Built-in Text Editor:** Open, edit, and save text files under 500 KB directly inside the terminal (`Ctrl+S`).
+* **Live Search & Filtering:** Instantly search and filter files and folders in the current directory (`Ctrl+F`).
 
-## 🚀 Installation & Usage
+## ⌨️ Keyboard Shortcuts
 
-## Warning: 
-When changing color, please start your text with #; otherwise, it will be incorrect and the software will not detect it.
+| Shortcut | Action |
+| :--- | :--- |
+| `Tab` / `F3` | Switch between panels |
+| `↑` / `↓` or `j` / `k` | Navigate up/down in the list |
+| `Enter` / `→` / `l` | Open directory or open file in editor |
+| `Backspace` / `←` / `h` | Go to parent directory |
+| `F2` | Rename selected item |
+| `F5` | Copy active item to passive panel |
+| `F6` | Move active item to passive panel |
+| `Delete` | Delete selected item |
+| `Ctrl+B` | Create a new empty file |
+| `Ctrl+N` | Create a new folder |
+| `Ctrl+F` | Start search mode |
+| `Ctrl+Z` | Undo last operation |
+| `Ctrl+Y` | Redo undone operation |
+| `Ctrl+C` | Quit application |
 
-## You can customize and change the size of the widget and the home screen.
+* **In Editor Mode:** `Ctrl+S` (Save), `Esc` (Exit), `Arrow Keys` (Cursor Movement)
+* **In Search/Input Mode:** `Enter` (Confirm), `Esc` (Cancel)
 
-### 🐧 Linux (Debian/Ubuntu/Mint)
-Modern Linux distributions use externally managed environments. Here is the safest way to run the app:
+## 🛠️ Installation
+
+Follow these steps to run the project in your local environment:
+
+1. Ensure **Go (1.18 or higher)** is installed on your system.
+2. Initialize and download the required dependencies in your project directory:
 
 ```bash
-# 1. Install WebKit dependencies (required for pywebview GUI)
-sudo apt install python3-gi gir1.2-webkit2-4.1 python3-venv
+go mod init file-manager
+go get [github.com/charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea)
+go get [github.com/charmbracelet/bubbles/progress](https://github.com/charmbracelet/bubbles/progress)
+go get [github.com/charmbracelet/lipgloss](https://github.com/charmbracelet/lipgloss)
+```
 
-# 2. Clone the repository
-git clone [https://github.com/vaelisstudio12/NeonNotes](https://github.com/vaelisstudio12/NeonNotes)
-cd NeonNotes
+## Running
 
-# 3. Create virtual environment & install dependencies
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 4. Run the app
-python main.py
+```bash
+go run main.go
 ```
 
 ## ☕ Donate
