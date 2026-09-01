@@ -2,6 +2,8 @@
 
 A modern terminal-based file manager developed using Go and the Charmbracelet ecosystem, featuring dual panes, asynchronous file operations, an advanced undo/redo mechanism, and a built-in text editor.
 
+
+![Demo GIF](https://github.com/vaelisstudio12/NeonNotes/blob/main/application.gif) 
 ## 🚀 Features
 
 * **Dual-Pane:** Fast switching between left and right panels with independent directory management.
