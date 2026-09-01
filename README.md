@@ -52,7 +52,7 @@ go get [github.com/charmbracelet/lipgloss](https://github.com/charmbracelet/lipg
 go run main.go
 ```
 
-### ☕ Donate
+## ☕ Donate
 If you like this project, consider buying me a coffee with Monero (XMR):
 
 `45qNiHzBpi83ojK88ppgAS4cQSHRFThqY3JpXaNoQFB8Ap6hK6gFZ64SnTFqajeinjAqff3xjNy918ubRADX53bg2ZDPHUo`
