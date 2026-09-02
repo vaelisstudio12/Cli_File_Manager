@@ -54,6 +54,10 @@ go get [github.com/charmbracelet/lipgloss](https://github.com/charmbracelet/lipg
 go run main.go
 ```
 
+## Contact
+gmail --- vaelisstudio@gmail.com
+X/Twitter --- @vaelisstudio
+
 ## ☕ Donate
 If you like this project, consider buying me a coffee with Monero (XMR):
 
