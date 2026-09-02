@@ -55,10 +55,12 @@ go run main.go
 ```
 
 ## Contact
-gmail --- vaelisstudio@gmail.com
+gmail --- vaelisstudio@gmail.com 
 X/Twitter --- @vaelisstudio
 
 ## ☕ Donate
 If you like this project, consider buying me a coffee with Monero (XMR):
 
 `45qNiHzBpi83ojK88ppgAS4cQSHRFThqY3JpXaNoQFB8Ap6hK6gFZ64SnTFqajeinjAqff3xjNy918ubRADX53bg2ZDPHUo`
+
+Due to geographical financial restrictions and the complete absence of global payment processors (such as PayPal) in my region, traditional funding options are entirely inaccessible. Monero (XMR) is used here not as a tech gimmick or a political statement, but out of sheer practical necessity—it is the only reliable way to receive support and maintain financial independence while building open-source software.
