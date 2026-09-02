@@ -50,7 +50,6 @@ type Panel struct {
 	SearchQuery   string
 }
 
-// Async Message Types
 type progressTickMsg float64
 type asyncOpCompleteMsg struct {
 	action UndoAction
@@ -72,6 +71,8 @@ type model struct {
 
 	editContent []rune
 	editCursor  int
+	editScrollX int
+	editScrollY int
 
 	message   string
 	undoStack []UndoAction
@@ -81,8 +82,6 @@ type model struct {
 	progressChan chan float64
 	progressBar  progress.Model
 }
-
-// --- ASYNC & FILE OPERATIONS ---
 
 func formatSize(b int64) string {
 	if b < 1024 {
@@ -369,10 +368,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			passive = &m.left
 		}
 
-		// Editör Modu
 		if m.mode == ModeEditor {
+			getRowCol := func() (int, int) {
+				r, c := 0, 0
+				for i := 0; i < m.editCursor; i++ {
+					if m.editContent[i] == '\n' {
+						r++
+						c = 0
+					} else {
+						c++
+					}
+				}
+				return r, c
+			}
+
 			switch msg.String() {
 			case "esc":
+				if m.mode == ModeSearch {
+					active.SearchQuery = ""
+					active.applyFilter()
+				}
 				m.mode = ModeNormal
 			case "ctrl+s":
 				selected := active.FilteredItems[active.Cursor]
@@ -390,6 +405,45 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "right":
 				if m.editCursor < len(m.editContent) {
 					m.editCursor++
+				}
+			case "up":
+				r, c := getRowCol()
+				if r > 0 {
+					currStart := m.editCursor - c
+					prevNL := currStart - 1
+
+					prevStart := prevNL
+					for prevStart > 0 && m.editContent[prevStart-1] != '\n' {
+						prevStart--
+					}
+
+					prevLen := prevNL - prevStart
+					newCol := c
+					if newCol > prevLen {
+						newCol = prevLen
+					}
+					m.editCursor = prevStart + newCol
+				}
+			case "down":
+				_, c := getRowCol() // r kullanılmadığı için _ yaptık
+				nextNL := m.editCursor
+				for nextNL < len(m.editContent) && m.editContent[nextNL] != '\n' {
+					nextNL++
+				}
+
+				if nextNL < len(m.editContent) {
+					nextStart := nextNL + 1
+					nextEnd := nextStart
+					for nextEnd < len(m.editContent) && m.editContent[nextEnd] != '\n' {
+						nextEnd++
+					}
+
+					nextLen := nextEnd - nextStart
+					newCol := c
+					if newCol > nextLen {
+						newCol = nextLen
+					}
+					m.editCursor = nextStart + newCol
 				}
 			case "backspace":
 				if m.editCursor > 0 {
@@ -412,18 +466,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.editCursor += len(newChars)
 				}
 			}
+
+			wInfoText := int(float64(m.width)*0.40) - 4
+			hInfoText := m.height - 9
+
+			if wInfoText < 1 {
+				wInfoText = 1
+			}
+			if hInfoText < 1 {
+				hInfoText = 1
+			}
+
+			r, c := getRowCol()
+
+			if r < m.editScrollY {
+				m.editScrollY = r
+			} else if r >= m.editScrollY+hInfoText {
+				m.editScrollY = r - hInfoText + 1
+			}
+
+			if c < m.editScrollX {
+				m.editScrollX = c
+			} else if c >= m.editScrollX+wInfoText {
+				m.editScrollX = c - wInfoText + 1
+			}
+
 			return m, nil
 		}
 
-		// Input Modları (Arama / İsim Değiştirme / Yeni Klasör veya Dosya)
 		if m.mode == ModeRename || m.mode == ModeNewFolder || m.mode == ModeNewFile || m.mode == ModeSearch {
 			switch msg.String() {
 			case "esc":
-				m.mode = ModeNormal
 				if m.mode == ModeSearch {
 					active.SearchQuery = ""
 					active.applyFilter()
 				}
+				m.mode = ModeNormal
 			case "left":
 				if m.inputCursor > 0 {
 					m.inputCursor--
@@ -497,7 +575,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
-		// Normal Mod
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -760,9 +837,51 @@ func (m model) View() string {
 	} else if m.mode == ModeEditor {
 		infoColor = lipgloss.Color("196")
 		infoTitle = "=== TEXT EDITOR ==="
-		leftPart := string(m.editContent[:m.editCursor])
-		rightPart := string(m.editContent[m.editCursor:])
-		infoBody = leftPart + "█" + rightPart
+
+		leftPart := m.editContent[:m.editCursor]
+		rightPart := m.editContent[m.editCursor:]
+
+		var contentWithCursor []rune
+		contentWithCursor = append(contentWithCursor, leftPart...)
+		contentWithCursor = append(contentWithCursor, '█')
+		contentWithCursor = append(contentWithCursor, rightPart...)
+
+		lines := strings.Split(string(contentWithCursor), "\n")
+		var visibleLines []string
+
+		wInfoText := wInfo - 2
+		hInfoText := h - 5
+
+		if wInfoText < 1 {
+			wInfoText = 1
+		}
+		if hInfoText < 1 {
+			hInfoText = 1
+		}
+
+		startY := m.editScrollY
+		endY := startY + hInfoText
+		if endY > len(lines) {
+			endY = len(lines)
+		}
+
+		for i := startY; i < endY; i++ {
+			lineRunes := []rune(lines[i])
+
+			if m.editScrollX < len(lineRunes) {
+				lineRunes = lineRunes[m.editScrollX:]
+			} else {
+				lineRunes = []rune{}
+			}
+
+			if len(lineRunes) > wInfoText {
+				lineRunes = lineRunes[:wInfoText]
+			}
+
+			visibleLines = append(visibleLines, string(lineRunes))
+		}
+
+		infoBody = strings.Join(visibleLines, "\n")
 	}
 
 	infoStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(infoColor).Width(wInfo).Height(h)
@@ -784,7 +903,8 @@ func (m model) View() string {
 	}
 
 	footerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("42")).Padding(0, 1)
-	if m.mode == ModeEditor || m.mode == ModeSearch || m.mode == ModeRename {
+
+	if m.mode == ModeEditor || m.mode == ModeSearch || m.mode == ModeRename || m.mode == ModeNewFolder || m.mode == ModeNewFile {
 		footerStyle = footerStyle.Background(lipgloss.Color("205"))
 	}
 
